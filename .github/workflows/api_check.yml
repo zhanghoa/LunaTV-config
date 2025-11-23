@@ -56,6 +56,32 @@ jobs:
           git add report.md README.md tvbox-config-healthy.json
           git commit -m "更新 API 健康报告、TVBox 配置及 README ($(date -d '+8 hour' +'%Y-%m-%d %H:%M:%S CST'))" || echo "No changes to commit"
           git push https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git HEAD:main
+
+      - name: 🚀 推送 TVBox 配置到目标仓库 (zhanghoa/config)
+        uses: cpina/github-action-push-to-another-repository@main
+        with:
+          # 使用步骤一中创建的 Secret
+          github_token: ${{ secrets.PUSH_TO_OTHER_REPO }}
+          
+          # 源文件路径：当前仓库中生成的 TVBox 配置
+          source_file: tvbox-config-healthy.json
+          
+          # 目标仓库：zhanghoa/config
+          destination_repo: zhanghoa/config
+          
+          # 目标文件路径：config/tvbox.txt
+          destination_folder: config
+          destination_file: tvbox.txt
+          
+          # 目标分支
+          destination_branch: main
+          
+          # 提交信息
+          commit_message: "自动更新 TVBox 健康配置 [Action Run ID: ${{ github.run_id }}]"
+          
+          # 提交者信息
+          user_email: github-actions[bot]@users.noreply.github.com
+          user_name: github-actions[bot]
           
       - name: 删除过期工作流记录
         # 删除工作流记录/只保留1天记录，最少保留 5 次
