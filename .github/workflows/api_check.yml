@@ -30,15 +30,15 @@ jobs:
           node-version: "20"
 
       - name: 安装依赖
-        # 假设 API 检查脚本依赖 axios
+        # 假设所有脚本都依赖 axios
         run: npm install axios
 
       - name: 运行 API 检查和报告生成脚本 (check_api.js)
-        # 生成 report.md
+        # 运行主检查脚本，生成 report.md
         run: |
           API_NAME="${{ github.event.inputs.api_name || '你好' }}"
           echo "检查 API: $API_NAME"
-          node check_sources_queue_retry.js "$API_NAME"
+          node check_api.js "$API_NAME"
 
       - name: 运行 TVBox 配置转换脚本 (generate_tvbox_config.js)
         # 读取 report.md，生成 tvbox-config-healthy.json
@@ -54,12 +54,11 @@ jobs:
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
           # 添加所有生成的文件
           git add report.md README.md tvbox-config-healthy.json
-          # 提交信息使用 CST 时间戳
           git commit -m "更新 API 健康报告、TVBox 配置及 README ($(date -d '+8 hour' +'%Y-%m-%d %H:%M:%S CST'))" || echo "No changes to commit"
           git push https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git HEAD:main
           
       - name: 删除过期工作流记录
-        # 删除工作流记录/只保留1天记录
+        # 删除工作流记录/只保留1天记录，最少保留 5 次
         uses: Mattraks/delete-workflow-runs@main
         with:
           retain_days: 1
