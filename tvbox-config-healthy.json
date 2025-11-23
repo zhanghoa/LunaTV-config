@@ -1064,24 +1064,6 @@
       "playUrl": ""
     },
     {
-      "key": "slapibf_com",
-      "name": "🔞森林资源",
-      "type": 1,
-      "api": "https://beiyong.slapibf.com/api.php/provide/vod/?ac=list",
-      "searchable": 1,
-      "quickSearch": 1,
-      "filterable": 1,
-      "original_api": "https://beiyong.slapibf.com/api.php/provide/vod",
-      "ext": "https://slapibf.com",
-      "header": {
-        "User-Agent": "Dalvik/2.1.0 (Linux; U; Android 10; Mi 9 Build/QKQ1.190828.002)",
-        "Accept": "application/json, */*",
-        "Connection": "close"
-      },
-      "playerType": 1,
-      "playUrl": ""
-    },
-    {
       "key": "apilj_com",
       "name": "🔞辣椒资源",
       "type": 1,
