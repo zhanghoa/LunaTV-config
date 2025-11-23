@@ -74,10 +74,10 @@ jobs:
           # 3. 复制并重命名文件
           mkdir -p config
           # 将源文件 tvbox-config-healthy.json 复制到目标路径 config/，并重命名为 tvbox.txt
-          cp ../tvbox-config-healthy.json config/tvbox.txt
+          cp ../tvbox-config-healthy.json tvbox.txt
           
           # 4. 提交更改
-          git add config/tvbox.txt
+          git add tvbox.txt
           git commit -m "自动更新 TVBox 健康配置 [Action Run ID: ${{ github.run_id }}]" || echo "No changes to commit"
           
           # 5. 推送（Push）到目标仓库
