@@ -1,12 +1,15 @@
 {
-  "name": "lunatv-base58",
+  "name": "lunatv-monitoring-service",
   "version": "1.0.0",
-  "description": "Convert LunaTV-config.json to Base58",
-  "main": "encode.js",
+  "description": "API Monitoring, Configuration Generation, and Base58 Encoding service.",
+  "main": "server.js", 
   "scripts": {
+    "start": "node server.js",
     "encode": "node encode.js"
   },
   "dependencies": {
-    "bs58": "^5.0.0"
+    "axios": "^1.6.0",       
+    "express": "^4.18.2",     
+    "bs58": "^5.0.0"          
   }
 }
