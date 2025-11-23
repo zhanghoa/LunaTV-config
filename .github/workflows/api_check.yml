@@ -38,7 +38,8 @@ jobs:
         run: |
           API_NAME="${{ github.event.inputs.api_name || '你好' }}"
           echo "检查 API: $API_NAME"
-          node check_api.js "$API_NAME"
+          # 确保这个文件名与您仓库中的实际文件名一致
+          node check_api.js "$API_NAME" 
 
       - name: 运行 TVBox 配置转换脚本 (generate_tvbox_config.js)
         # 读取 report.md，生成 tvbox-config-healthy.json
@@ -48,43 +49,44 @@ jobs:
         # 读取 report.md，生成 README.md
         run: node update_readme.js
 
-      - name: 提交并推送报告
+      - name: 提交并推送报告 (当前仓库)
+        # 推送 report.md 和 README.md 到当前仓库
         run: |
           git config --global user.name "github-actions[bot]"
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
-          # 添加所有生成的文件
-          git add report.md README.md tvbox-config-healthy.json
-          git commit -m "更新 API 健康报告、TVBox 配置及 README ($(date -d '+8 hour' +'%Y-%m-%d %H:%M:%S CST'))" || echo "No changes to commit"
+          # 仅添加当前仓库需要的文件
+          git add report.md README.md
+          git commit -m "更新 API 报告和 README ($(date -d '+8 hour' +'%Y-%m-%d %H:%M:%S CST'))" || echo "No changes to commit"
           git push https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git HEAD:main
-
+          
       - name: 🚀 推送 TVBox 配置到目标仓库 (zhanghoa/config)
+        # 使用修正后的参数名，将 tvbox-config-healthy.json 推送到 zhanghoa/config
         uses: cpina/github-action-push-to-another-repository@main
         with:
-          # 使用步骤一中创建的 Secret
-          github_token: ${{ secrets.PUSH_TO_OTHER_REPO }}
+          # 使用 PAT 作为认证令牌，确保其有 repo 权限
+          API_TOKEN_GITHUB: ${{ secrets.PUSH_TO_OTHER_REPO }}
           
-          # 源文件路径：当前仓库中生成的 TVBox 配置
-          source_file: tvbox-config-healthy.json
+          # 目标仓库详情
+          destination-github-username: zhanghoa
+          destination-repository-name: config
           
-          # 目标仓库：zhanghoa/config
-          destination_repo: zhanghoa/config
+          # 源文件路径
+          source-file: tvbox-config-healthy.json
           
-          # 目标文件路径：config/tvbox.txt
-          destination_folder: config
-          destination_file: tvbox.txt
+          # 目标路径和文件名
+          target-directory: config
+          destination-file: tvbox.txt
           
           # 目标分支
-          destination_branch: main
+          target-branch: main
           
           # 提交信息
-          commit_message: "自动更新 TVBox 健康配置 [Action Run ID: ${{ github.run_id }}]"
-          
-          # 提交者信息
-          user_email: github-actions[bot]@users.noreply.github.com
-          user_name: github-actions[bot]
+          commit-message: "自动更新 TVBox 健康配置 [Action Run ID: ${{ github.run_id }}]"
+          user-email: github-actions[bot]@users.noreply.github.com
+          user-name: github-actions[bot]
           
       - name: 删除过期工作流记录
-        # 删除工作流记录/只保留1天记录，最少保留 5 次
+        # 清理工作流运行历史
         uses: Mattraks/delete-workflow-runs@main
         with:
           retain_days: 1
