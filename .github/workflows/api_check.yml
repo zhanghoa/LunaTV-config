@@ -72,7 +72,6 @@ jobs:
           cd target_repo
           
           # 3. 复制并重命名文件
-          mkdir -p config
           # 将源文件 tvbox-config-healthy.json 复制到目标路径 config/，并重命名为 tvbox.txt
           cp ../tvbox-config-healthy.json tvbox.txt
           
