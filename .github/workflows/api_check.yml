@@ -60,30 +60,26 @@ jobs:
           git push https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git HEAD:main
           
       - name: 🚀 推送 TVBox 配置到目标仓库 (zhanghoa/config)
-        # 使用修正后的参数名，将 tvbox-config-healthy.json 推送到 zhanghoa/config
-        uses: cpina/github-action-push-to-another-repository@main
+        # ⚠️ 注意：使用新的 Actions
+        uses: ad-m/github-push-action@master
         with:
-          # 使用 PAT 作为认证令牌，确保其有 repo 权限
-          API_TOKEN_GITHUB: ${{ secrets.PUSH_TO_OTHER_REPO }}
+          # 必须使用您在 Secrets 中设置的 PAT
+          github_token: ${{ secrets.PUSH_TO_OTHER_REPO }}
           
-          # 目标仓库详情
-          destination-github-username: zhanghoa
-          destination-repository-name: config
+          # 目标仓库，格式为 user/repo
+          repository: zhanghoa/config
           
-          # 源文件路径
-          source-file: tvbox-config-healthy.json
+          # 源文件路径：当前仓库中生成的配置
+          source: tvbox-config-healthy.json
           
-          # 目标路径和文件名
-          target-directory: config
-          destination-file: tvbox.txt
+          # 目标路径：将源文件推送到目标仓库的 config/tvbox.txt
+          destination: config/tvbox.txt
           
           # 目标分支
-          target-branch: main
+          branch: main
           
           # 提交信息
-          commit-message: "自动更新 TVBox 健康配置 [Action Run ID: ${{ github.run_id }}]"
-          user-email: github-actions[bot]@users.noreply.github.com
-          user-name: github-actions[bot]
+          message: "自动更新 TVBox 健康配置 [Action Run ID: ${{ github.run_id }}]"
           
       - name: 删除过期工作流记录
         # 清理工作流运行历史
