@@ -1,0 +1,56 @@
+name: Docker Build and Publish
+
+on:
+  push:
+    branches: [ main ]
+    # 仅在脚本或依赖文件更改时触发构建
+    paths:
+      - '**.js'
+      - 'package.json'
+      - 'package-lock.json'
+      - 'Dockerfile'
+      - 'LunaTV-config.json'
+  workflow_dispatch:
+
+env:
+  # 目标镜像名称 (替换 YOUR_GITHUB_USER 为您的 GitHub 用户名)
+  IMAGE_NAME: api-dashboard
+  REGISTRY: ghcr.io
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write # 写入 GHCR 所需的权限
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Log in to GitHub Container Registry (GHCR)
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          # GITHUB_TOKEN 是 GitHub Actions 提供的内置 token
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Extract metadata (tags) for Docker
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.REGISTRY }}/${{ github.repository_owner }}/${{ env.IMAGE_NAME }}
+          tags: |
+            type=sha,format=long,prefix=
+            type=raw,value=latest,enable=true
+
+      - name: Build and Push Docker image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          # 🚨 确保您的 Dockerfile 位于根目录
+          file: ./Dockerfile
