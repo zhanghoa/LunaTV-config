@@ -33,7 +33,7 @@ jobs:
         # 假设 API 检查脚本依赖 axios
         run: npm install axios
 
-      - name: 运行 API 检查和报告生成脚本 (check_sources_queue_retry.js)
+      - name: 运行 API 检查和报告生成脚本 (check_api.js)
         # 生成 report.md
         run: |
           API_NAME="${{ github.event.inputs.api_name || '你好' }}"
