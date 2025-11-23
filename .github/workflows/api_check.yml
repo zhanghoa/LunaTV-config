@@ -59,27 +59,29 @@ jobs:
           git commit -m "更新 API 报告和 README ($(date -d '+8 hour' +'%Y-%m-%d %H:%M:%S CST'))" || echo "No changes to commit"
           git push https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git HEAD:main
           
-      - name: 🚀 推送 TVBox 配置到目标仓库 (zhanghoa/config)
-        # ⚠️ 注意：使用新的 Actions
-        uses: ad-m/github-push-action@master
-        with:
-          # 必须使用您在 Secrets 中设置的 PAT
-          github_token: ${{ secrets.PUSH_TO_OTHER_REPO }}
+      - name: 🚀 推送 TVBox 配置到目标私有仓库 (Git Shell)
+        run: |
+          # 1. 设置 Git 身份
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
           
-          # 目标仓库，格式为 user/repo
-          repository: zhanghoa/config
+          # 2. 使用 PAT 进行认证克隆：关键步骤，解决 "Repository not found"
+          # 格式：https://x-access-token:YOUR_PAT@github.com/user/repo.git
+          git clone https://x-access-token:${{ secrets.PUSH_TO_OTHER_REPO }}@github.com/zhanghoa/config.git target_repo
           
-          # 源文件路径：当前仓库中生成的配置
-          source: tvbox-config-healthy.json
+          cd target_repo
           
-          # 目标路径：将源文件推送到目标仓库的 config/tvbox.txt
-          destination: config/tvbox.txt
+          # 3. 复制并重命名文件
+          mkdir -p config
+          # 将源文件 tvbox-config-healthy.json 复制到目标路径 config/，并重命名为 tvbox.txt
+          cp ../tvbox-config-healthy.json config/tvbox.txt
           
-          # 目标分支
-          branch: main
+          # 4. 提交更改
+          git add config/tvbox.txt
+          git commit -m "自动更新 TVBox 健康配置 [Action Run ID: ${{ github.run_id }}]" || echo "No changes to commit"
           
-          # 提交信息
-          message: "自动更新 TVBox 健康配置 [Action Run ID: ${{ github.run_id }}]"
+          # 5. 推送（Push）到目标仓库
+          git push
           
       - name: 删除过期工作流记录
         # 清理工作流运行历史
