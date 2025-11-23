@@ -28,11 +28,6 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      # 确保 package.json 文件被正确合并和更新
-      # 如果您在本地忘记 npm install，这里会报错。
-      - name: Install dependencies (optional check)
-        run: npm install
-
       - name: Log in to GitHub Container Registry (GHCR)
         uses: docker/login-action@v3
         with:
@@ -44,8 +39,9 @@ jobs:
         id: meta
         uses: docker/metadata-action@v5
         with:
-          # 完整的镜像路径: ghcr.io/zhanghoa/LunaTV-config/api-dashboard
-          images: ${{ env.REGISTRY }}/${{ github.repository_owner }}/${{ github.event.repository.name }}/${{ env.IMAGE_NAME }}
+          # 🚨 修正镜像路径：手动将仓库名转换为小写 'lunatv-config'
+          # 完整的镜像路径: ghcr.io/zhanghoa/lunatv-config/api-dashboard
+          images: ${{ env.REGISTRY }}/${{ github.repository_owner }}/lunatv-config/${{ env.IMAGE_NAME }}
           tags: |
             type=raw,value=latest,enable=true
             type=sha,format=short,prefix=
@@ -55,7 +51,6 @@ jobs:
         with:
           context: .
           push: true
-          # 🚨 这一步将 COPY server.js 和其他文件到镜像
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
           file: ./Dockerfile
