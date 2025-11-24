@@ -1,4 +1,4 @@
-name: Docker Build and Publish - Dynamic Dashboard
+name: Docker Build and Publish - Multi-Arch
 
 on:
   push:
@@ -28,6 +28,14 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
+      # 1️⃣ 新增：设置 QEMU，用于模拟 ARM 架构
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
+
+      # 2️⃣ 新增：设置 Docker Buildx，这是构建多架构镜像所必需的
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
       - name: Log in to GitHub Container Registry (GHCR)
         uses: docker/login-action@v3
         with:
@@ -39,8 +47,7 @@ jobs:
         id: meta
         uses: docker/metadata-action@v5
         with:
-          # 🚨 修正镜像路径：手动将仓库名转换为小写 'lunatv-config'
-          # 完整的镜像路径: ghcr.io/zhanghoa/lunatv-config/api-dashboard
+          # 🚨 确保仓库名 lunatv-config 是小写
           images: ${{ env.REGISTRY }}/${{ github.repository_owner }}/lunatv-config/${{ env.IMAGE_NAME }}
           tags: |
             type=raw,value=latest,enable=true
@@ -54,3 +61,5 @@ jobs:
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
           file: ./Dockerfile
+          # 3️⃣ 新增：指定构建的目标架构，同时包含 amd64 (电脑) 和 arm64 (盒子/树莓派)
+          platforms: linux/amd64,linux/arm64
