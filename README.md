@@ -336,16 +336,16 @@ console.log(`Request from: ${request.headers.get('cf-connecting-ip')}`)
   
 # API 健康报告（每日自动检测API状态）
 
-## API 状态（最近更新：2025-11-24 08:56 CST）
+## API 状态（最近更新：2025-11-24 09:15 CST）
 
-- 总 API 数量：78
+- 总 API 数量：77
 - 成功 API 数量：77
-- 失败 API 数量：1
-- 平均可用率：98.2%
+- 失败 API 数量：0
+- 平均可用率：99.5%
 - 完美可用率（100%）：68 个
 - 高可用率（80%-99%）：9 个
 - 中等可用率（50%-79%）：0 个
-- 低可用率（<50%）：1 个
+- 低可用率（<50%）：0 个
 
 <div style="font-size: 11px;">
 
@@ -429,7 +429,6 @@ console.log(`Request from: ${request.headers.get('cf-connecting-ip')}`)
 | ✅ | 🔞黄色仓库 | [Link](https://hsckzy.xyz) | [Link](https://hsckzy.xyz/api.php/provide/vod) | ✅ | 29 | 1 | 96.7% | ✅✅✅✅✅✅✅ |
 | ✅ | 🎬U酷影视 | [Link](https://www.ukuzy.com) | [Link](https://api.ukuapi88.com/api.php/provide/vod) | ✅ | 28 | 2 | 93.3% | ✅✅✅✅✅✅✅ |
 | ✅ | 🔞森林资源 | [Link](https://slapibf.com) | [Link](https://beiyong.slapibf.com/api.php/provide/vod) | ✅ | 28 | 2 | 93.3% | ✅✅✅✅✅✅✅ |
-| ❌ | 🎬金鹰资源 | [Link](https://jyzyapi.com) | [Link](https://jyzyapi.com/provide/vod) | ✅ | 0 | 1 | 0.0% | ------❌ |
 <!-- API_TABLE_END -->
 
 
