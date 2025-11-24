@@ -1,65 +1,40 @@
-name: Docker Build and Publish - Multi-Arch
+# =========================================================
+# Stage 1: 构建阶段
+# =========================================================
+FROM node:20-alpine AS builder
+RUN apk update && apk add --no-cache dos2unix
+WORKDIR /usr/src/app
+COPY package*.json ./
+RUN npm install --production
+RUN npm cache clean --force
 
-on:
-  push:
-    branches: [ main ]
-    # 仅在关键文件更改时触发构建
-    paths:
-      - '**.js'
-      - 'package.json'
-      - 'package-lock.json'
-      - 'Dockerfile'
-      - 'LunaTV-config.json'
-  workflow_dispatch:
+# 复制文件 (注意：确保文件名与您本地一致)
+COPY check_api.js generate_tvbox_config.js update_readme.js server.js ./
+COPY LunaTV-config.json ./
+COPY README.md ./
 
-env:
-  # 镜像名称和注册表配置
-  IMAGE_NAME: api-dashboard
-  REGISTRY: ghcr.io
+# 修复换行符
+RUN dos2unix check_api.js generate_tvbox_config.js update_readme.js server.js
 
-jobs:
-  build-and-push:
-    runs-on: ubuntu-latest
-    permissions:
-      contents: read
-      packages: write # 写入 GHCR 所需的权限
+# =========================================================
+# Stage 2: 运行阶段
+# =========================================================
+FROM node:20-alpine
+WORKDIR /app
 
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
+# 复制依赖
+COPY --from=builder /usr/src/app/node_modules ./node_modules
 
-      # 1️⃣ 新增：设置 QEMU，用于模拟 ARM 架构
-      - name: Set up QEMU
-        uses: docker/setup-qemu-action@v3
+# 复制脚本
+COPY --from=builder /usr/src/app/*.js ./
 
-      # 2️⃣ 新增：设置 Docker Buildx，这是构建多架构镜像所必需的
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
+# 创建数据目录
+RUN mkdir -p /app/data
 
-      - name: Log in to GitHub Container Registry (GHCR)
-        uses: docker/login-action@v3
-        with:
-          registry: ${{ env.REGISTRY }}
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }} # 使用内置 token 认证
+# 复制默认配置到数据目录（作为初始模板）
+COPY --from=builder /usr/src/app/LunaTV-config.json /app/data/
+COPY --from=builder /usr/src/app/README.md /app/data/
 
-      - name: Extract metadata (tags) for Docker
-        id: meta
-        uses: docker/metadata-action@v5
-        with:
-          # 🚨 确保仓库名 lunatv-config 是小写
-          images: ${{ env.REGISTRY }}/${{ github.repository_owner }}/lunatv-config/${{ env.IMAGE_NAME }}
-          tags: |
-            type=raw,value=latest,enable=true
-            type=sha,format=short,prefix=
-
-      - name: Build and Push Docker image
-        uses: docker/build-push-action@v5
-        with:
-          context: .
-          push: true
-          tags: ${{ steps.meta.outputs.tags }}
-          labels: ${{ steps.meta.outputs.labels }}
-          file: ./Dockerfile
-          # 3️⃣ 新增：指定构建的目标架构，同时包含 amd64 (电脑) 和 arm64 (盒子/树莓派)
-          platforms: linux/amd64,linux/arm64
+EXPOSE 8080
+ENTRYPOINT ["node"]
+CMD ["server.js"]
