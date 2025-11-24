@@ -34,19 +34,24 @@ jobs:
         run: npm install axios
 
       - name: 运行 API 检查和报告生成脚本 (check_api.js)
-        # 运行主检查脚本，生成 report.md
+        # 🚨 关键修改 1：添加环境变量，强制脚本在根目录运行
+        env:
+          DATA_DIR_ENV: .
         run: |
           API_NAME="${{ github.event.inputs.api_name || '你好' }}"
           echo "检查 API: $API_NAME"
-          # 确保这个文件名与您仓库中的实际文件名一致
           node check_api.js "$API_NAME" 
 
       - name: 运行 TVBox 配置转换脚本 (generate_tvbox_config.js)
-        # 读取 report.md，生成 tvbox-config-healthy.json
+        # 🚨 关键修改 1：添加环境变量
+        env:
+          DATA_DIR_ENV: .
         run: node generate_tvbox_config.js
 
       - name: 运行 README 更新脚本 (update_readme.js)
-        # 读取 report.md，生成 README.md
+        # 🚨 关键修改 1：添加环境变量
+        env:
+          DATA_DIR_ENV: .
         run: node update_readme.js
 
       - name: 提交并推送报告 (当前仓库)
@@ -54,8 +59,12 @@ jobs:
         run: |
           git config --global user.name "github-actions[bot]"
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
-          # 仅添加当前仓库需要的文件
-          git add report.md README.md
+          
+          # 🚨 关键修改 2：文件名更新
+          # 上一版脚本生成的是 tvbox-healthy.json 和 tvbox-full.json
+          # 我们把这两个新文件也加入版本控制
+          git add report.md README.md tvbox-healthy.json tvbox-full.json
+          
           git commit -m "更新 API 报告和 README ($(date -d '+8 hour' +'%Y-%m-%d %H:%M:%S CST'))" || echo "No changes to commit"
           git push https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git HEAD:main
           
@@ -65,25 +74,29 @@ jobs:
           git config --global user.name "github-actions[bot]"
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
           
-          # 2. 使用 PAT 进行认证克隆：关键步骤，解决 "Repository not found"
-          # 格式：https://x-access-token:YOUR_PAT@github.com/user/repo.git
+          # 2. 使用 PAT 进行认证克隆
           git clone https://x-access-token:${{ secrets.PUSH_TO_OTHER_REPO }}@github.com/zhanghoa/config.git target_repo
           
           cd target_repo
           
           # 3. 复制并重命名文件
-          # 将源文件 tvbox-config-healthy.json 复制到目标路径 config/，并重命名为 tvbox.txt
-          cp ../tvbox-config-healthy.json tvbox.txt
+          # 🚨 关键修改 3：源文件名变更为 tvbox-healthy.json
+          # 将 纯净版配置 复制为 tvbox.txt
+          cp ../tvbox-healthy.json tvbox.txt
+          
+          # (可选) 如果您想把完整版也推过去，可以取消下面这行的注释
+          # cp ../tvbox-full.json tvbox-full.txt
           
           # 4. 提交更改
           git add tvbox.txt
+          # git add tvbox-full.txt
+          
           git commit -m "自动更新 TVBox 健康配置 [Action Run ID: ${{ github.run_id }}]" || echo "No changes to commit"
           
           # 5. 推送（Push）到目标仓库
           git push
           
       - name: 删除过期工作流记录
-        # 清理工作流运行历史
         uses: Mattraks/delete-workflow-runs@main
         with:
           retain_days: 1
