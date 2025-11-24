@@ -59,3 +59,8 @@ const generateConfig = () => {
 
     const baseConfig = { "spider": SPIDER_URL, "live": { "url": LIVE_URL, "ext": {} }, "rules": [], "ads": [] };
     fs.writeFileSync(FILE_FULL, JSON.stringify({ ...baseConfig, "sites": fullSites }, null, 2));
+    fs.writeFileSync(FILE_HEALTHY, JSON.stringify({ ...baseConfig, "sites": healthySites }, null, 2));
+    console.log("🎉 配置生成完成");
+};
+
+generateConfig();
