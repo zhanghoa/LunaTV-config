@@ -207,10 +207,15 @@
       "api": "https://m3u8.apiyhzy.com/api.php/provide/vod",
       "detail": "https://yhzy.cc"
     },
-    "91md.me": {
-      "name": "🔞麻豆视频",
-      "api": "https://91md.me/api.php/provide/vod",
-      "detail": "https://91md.me"
+    "yhzy.cc": {
+      "name": "🎬樱花资源",
+      "api": "https://m3u8.apiyhzy.com/api.php/provide/vod",
+      "detail": "https://yhzy.cc"
+    },
+    "jyzyapi.com": {
+      "name": "🎬金鹰资源",
+      "api": "https://jyzyapi.com/provide/vod",
+      "detail": "https://jyzyapi.com"
     },
     "91jpzyw.com": {
       "name": "🔞91-精品-",
