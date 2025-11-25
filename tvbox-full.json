@@ -195,23 +195,6 @@
       "playerType": 1
     },
     {
-      "key": "collect_wolongzyw_com",
-      "name": "🎬卧龙影视",
-      "type": 1,
-      "api": "https://collect.wolongzyw.com/api.php/provide/vod/?ac=list",
-      "searchable": 1,
-      "quickSearch": 1,
-      "filterable": 1,
-      "original_api": "https://collect.wolongzyw.com/api.php/provide/vod",
-      "ext": "https://collect.wolongzyw.com",
-      "header": {
-        "User-Agent": "Dalvik/2.1.0",
-        "Accept": "*/*",
-        "Connection": "close"
-      },
-      "playerType": 1
-    },
-    {
       "key": "jszyapi_com",
       "name": "🎬极速资源",
       "type": 1,
