@@ -93,23 +93,6 @@
       "playerType": 1
     },
     {
-      "key": "ikunzy_com",
-      "name": "🎬iKun资源",
-      "type": 1,
-      "api": "https://ikunzyapi.com/api.php/provide/vod/?ac=list",
-      "searchable": 1,
-      "quickSearch": 1,
-      "filterable": 1,
-      "original_api": "https://ikunzyapi.com/api.php/provide/vod",
-      "ext": "https://ikunzy.com",
-      "header": {
-        "User-Agent": "Dalvik/2.1.0",
-        "Accept": "*/*",
-        "Connection": "close"
-      },
-      "playerType": 1
-    },
-    {
       "key": "lzizy_net",
       "name": "🎬量子影视",
       "type": 1,
@@ -1037,23 +1020,6 @@
       "filterable": 1,
       "original_api": "https://xzybb2.com/api.php/provide/vod",
       "ext": "https://xzytv.com",
-      "header": {
-        "User-Agent": "Dalvik/2.1.0",
-        "Accept": "*/*",
-        "Connection": "close"
-      },
-      "playerType": 1
-    },
-    {
-      "key": "zuisezy_com",
-      "name": "🔞最色资源",
-      "type": 1,
-      "api": "https://api.zuiseapi.com/api.php/provide/vod/?ac=list",
-      "searchable": 1,
-      "quickSearch": 1,
-      "filterable": 1,
-      "original_api": "https://api.zuiseapi.com/api.php/provide/vod",
-      "ext": "https://zuisezy.com",
       "header": {
         "User-Agent": "Dalvik/2.1.0",
         "Accept": "*/*",
