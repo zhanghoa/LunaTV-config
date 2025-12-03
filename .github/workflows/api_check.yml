@@ -1,103 +1,111 @@
-name: API Check
+# .github/workflows/api-check-and-update.yml
+
+name: 📊 API Check, Build & Deploy
 
 on:
-  schedule:
-    # 每天北京时间凌晨1点运行 (UTC 17点)
-    - cron: "0 17 * * *"
-  push:
-    paths:
-      # 监听 LunaTV-config.json 文件变更
-      - LunaTV-config.json
+  # 1. 手动触发
   workflow_dispatch:
-    # 添加手动触发
     inputs:
       api_name:
-        description: '搜索关键字 (用于 API 搜索功能检测)'
+        description: '用于 API 搜索功能检测的关键字'
         required: false
-        default: '你好' # 默认搜索关键字
+        default: '你好'
+
+  # 2. 定时触发 (每天北京时间凌晨1点 / UTC 17点)
+  schedule:
+    - cron: "0 17 * * *"
+    
+  # 3. 文件变更时触发
+  push:
+    paths:
+      - 'LunaTV-config.json' # 注意这里使用引号，是更好的 YAML 语法
 
 jobs:
-  check_apis:
+  build-and-deploy:
     runs-on: ubuntu-latest
+    
+    # 赋予工作流向仓库写入内容的权限
+    permissions:
+      contents: write
 
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v3
-        
-      - name: 安装 Node.js
-        uses: actions/setup-node@v3
+      # --- 1. 环境准备 ---
+      - name: ⬇️ Checkout Repository
+        uses: actions/checkout@v4 # 升级到 v4
+
+      - name: ⚙️ Setup Node.js Environment
+        uses: actions/setup-node@v4 # 升级到 v4
         with:
           node-version: "20"
+          cache: 'npm' # 增加 npm 缓存，加快后续运行速度
 
-      - name: 安装依赖
-        # 假设所有脚本都依赖 axios
-        run: npm install axios
+      - name: 📦 Install Dependencies
+        run: npm ci # 使用 npm ci，它比 install 更快、更严格，适合自动化环境
 
-      - name: 运行 API 检查和报告生成脚本 (check_api.js)
-        # 🚨 关键修改 1：添加环境变量，强制脚本在根目录运行
+      # --- 2. 核心脚本执行 ---
+      - name: 🔬 Run API Check & Report Generation
         env:
-          DATA_DIR_ENV: .
+          DATA_DIR_ENV: . # 环境变量保持不变
         run: |
-          API_NAME="${{ github.event.inputs.api_name || '你好' }}"
-          echo "检查 API: $API_NAME"
-          node check_api.js "$API_NAME" 
+          # 使用三元表达式方式，更简洁地处理默认值
+          KEYWORD="${{ github.event.inputs.api_name || '你好' }}"
+          echo "🚀 Starting API check with keyword: $KEYWORD"
+          node check_api.js "$KEYWORD"
 
-      - name: 运行 TVBox 配置转换脚本 (generate_tvbox_config.js)
-        # 🚨 关键修改 1：添加环境变量
+      - name: 🔄 Run TVBox Config Conversion
         env:
           DATA_DIR_ENV: .
         run: node generate_tvbox_config.js
 
-      - name: 运行 README 更新脚本 (update_readme.js)
-        # 🚨 关键修改 1：添加环境变量
+      - name: 📝 Run README Update
         env:
           DATA_DIR_ENV: .
         run: node update_readme.js
 
-      - name: 提交并推送报告 (当前仓库)
-        # 推送 report.md 和 README.md 到当前仓库
+      # --- 3. 部署到当前仓库 ---
+      - name: ⬆️ Commit and Push to This Repository
+        uses: stefanzweifel/git-auto-commit-action@v5 # 使用专业的自动提交 Action
+        with:
+          commit_message: "docs(auto): 📊 更新 API 报告、配置和 README"
+          commit_options: '--no-verify'
+          # 定义需要提交的文件模式
+          file_pattern: 'report.md README.md tvbox-healthy.json tvbox-full.json'
+          commit_user_name: 'github-actions[bot]'
+          commit_user_email: 'github-actions[bot]@users.noreply.github.com'
+
+      # --- 4. 部署到私有仓库 ---
+      - name: 🚀 Deploy TVBox Config to Private Repository
         run: |
-          git config --global user.name "github-actions[bot]"
-          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          set -e # 添加这个命令，如果任何一步失败，脚本将立即退出
+
+          echo "🚚 Starting deployment to private repository..."
           
-          # 🚨 关键修改 2：文件名更新
-          # 上一版脚本生成的是 tvbox-healthy.json 和 tvbox-full.json
-          # 我们把这两个新文件也加入版本控制
-          git add report.md README.md tvbox-healthy.json tvbox-full.json
-          
-          git commit -m "更新 API 报告和 README ($(date -d '+8 hour' +'%Y-%m-%d %H:%M:%S CST'))" || echo "No changes to commit"
-          git push https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git HEAD:main
-          
-      - name: 🚀 推送 TVBox 配置到目标私有仓库 (Git Shell)
-        run: |
-          # 1. 设置 Git 身份
-          git config --global user.name "github-actions[bot]"
-          git config --global user.email "github-actions[bot]@users.noreply.github.com"
-          
-          # 2. 使用 PAT 进行认证克隆
+          # 克隆目标仓库
           git clone https://x-access-token:${{ secrets.PUSH_TO_OTHER_REPO }}@github.com/zhanghoa/config.git target_repo
           
+          # 复制并重命名文件
+          echo "Copying config files..."
+          cp ./tvbox-healthy.json ./target_repo/tvbox.txt
+          # cp ./tvbox-full.json ./target_repo/tvbox-full.txt # 如需推送完整版，取消此行注释
+
           cd target_repo
           
-          # 3. 复制并重命名文件
-          # 🚨 关键修改 3：源文件名变更为 tvbox-healthy.json
-          # 将 纯净版配置 复制为 tvbox.txt
-          cp ../tvbox-healthy.json tvbox.txt
+          # 如果没有变化，则不执行提交
+          if [[ -z $(git status -s) ]]; then
+            echo "No changes in target repository. Skipping commit."
+          else
+            echo "Changes detected. Committing and pushing..."
+            git config user.name "github-actions[bot]"
+            git config user.email "github-actions[bot]@users.noreply.github.com"
+            git add .
+            git commit -m "feat(auto): ✨ 自动更新 TVBox 健康配置 [from run ${{ github.run_id }}]"
+            git push
+          fi
           
-          # (可选) 如果您想把完整版也推过去，可以取消下面这行的注释
-          # cp ../tvbox-full.json tvbox-full.txt
-          
-          # 4. 提交更改
-          git add tvbox.txt
-          # git add tvbox-full.txt
-          
-          git commit -m "自动更新 TVBox 健康配置 [Action Run ID: ${{ github.run_id }}]" || echo "No changes to commit"
-          
-          # 5. 推送（Push）到目标仓库
-          git push
-          
-      - name: 删除过期工作流记录
-        uses: Mattraks/delete-workflow-runs@main
+      # --- 5. 清理工作流记录 ---
+      - name: 🧹 Clean up old workflow runs
+        uses: Mattraks/delete-workflow-runs@v2 # 锁定到 v2 版本
         with:
           retain_days: 1
           keep_minimum_runs: 5
+
